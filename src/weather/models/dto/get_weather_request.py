@@ -6,6 +6,6 @@ from datetime import date
 class GetWeatherRequestDTO:
     latitude: float
     longitude: float
-    hourly: list[str]
-    start_date: date
-    end_date: date
+    hourly: list[str] | None = None
+    start_date: date | None = None
+    end_date: date | None = None

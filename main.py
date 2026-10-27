@@ -1,8 +1,10 @@
 import argparse
-from datetime import date
+from src.config import Config
 
-import httpx
 import logging
+
+from src.weather.api.open_meteo import ApiOpenMetio
+from src.weather.models.dto.get_weather_request import GetWeatherRequestDTO
 
 logging.basicConfig(
     level=logging.INFO,
@@ -15,24 +17,13 @@ def main():
     parser = argparse.ArgumentParser(
                         prog='WeatherPipeline',
                         description='Pipeline for downloading weather data')
+    parser.add_argument('config')
     args = parser.parse_args()
 
-    base_url = 'https://archive-api.open-meteo.com/v1/archive'
-    params = {
-        "latitude": 55.75,
-        "longitude": 37.62,
-        "hourly": ",".join([
-            "temperature_2m",
-            "wind_speed_10m",
-            "relative_humidity_2m",
-            "rain",
-        ]),
-        'start_date': date(2026, 5, 9).strftime('%Y-%m-%d'),
-        'end_date': date(2026, 5, 9).strftime('%Y-%m-%d'),
-    }
-    response = httpx.get(base_url, params=params)
-    response.raise_for_status()
-    return response.json()
+    config = Config(_env_file=args.config)
+    weather_api = ApiOpenMetio(config.base_url)
+    return weather_api.get_weather(GetWeatherRequestDTO(longitude=37.61, latitude=55.75)).json()
+
 
 
 if __name__ == '__main__':
