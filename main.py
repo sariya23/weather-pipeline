@@ -21,8 +21,8 @@ def main():
     args = parser.parse_args()
 
     config = Config(_env_file=args.config)
-    weather_api = ApiOpenMetio(config.base_url)
-    return weather_api.get_weather(GetWeatherRequestDTO(longitude=37.61, latitude=55.75)).json()
+    open_meteo_api = ApiOpenMetio(config.base_url)
+    weather = Weather(weather_source=open_meteo_api)
 
 
 

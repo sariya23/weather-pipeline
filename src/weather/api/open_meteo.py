@@ -1,6 +1,7 @@
 import httpx
 from dataclasses import asdict
 import logging
+
 from src.weather.models.dto.get_weather_request import GetWeatherRequestDTO
 logger = logging.getLogger(__name__)
 
@@ -12,7 +13,10 @@ class ApiOpenMetio:
     def base_url(self):
         return self.__base_url
 
-    def get_weather(self, params: GetWeatherRequestDTO):
+    def source_name(self) -> str:
+        return 'open_metio'
+
+    def get_weather(self, params: GetWeatherRequestDTO) -> httpx.Response:
         with httpx.Client(base_url=self.base_url) as client:
             params_dict = asdict(params)
             if params.start_date:
