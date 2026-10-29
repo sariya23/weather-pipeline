@@ -6,15 +6,14 @@ from src.weather.models.dto.get_weather_request import GetWeatherRequestDTO
 logger = logging.getLogger(__name__)
 
 class ApiOpenMetio:
+    source_name = 'open_metio'
+
     def __init__(self, base_url: str):
         self.__base_url = base_url
 
     @property
     def base_url(self):
         return self.__base_url
-
-    def source_name(self) -> str:
-        return 'open_metio'
 
     def get_weather(self, params: GetWeatherRequestDTO) -> httpx.Response:
         with httpx.Client(base_url=self.base_url) as client:
