@@ -3,20 +3,20 @@
 
 
 CREATE TABLE IF NOT EXISTS city (
-    id BIGINT generated auto as identity primary key,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     city TEXT NOT NULL,
     longitude DOUBLE PRECISION NOT NULL,
     latitude DOUBLE PRECISION NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS source (
-    id BIGINT generated auto as identity primary key,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     source_name TEXT NOT NULL,
     source_url text
 );
 
 CREATE TABLE IF NOT EXISTS weather (
-    id BIGINT generated auto as identity primary key,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     city_id INTEGER NOT NULL,
     temperature_cel_2m DOUBLE PRECISION NOT NULL,
     wind_speed_10m DOUBLE PRECISION NOT NULL,
