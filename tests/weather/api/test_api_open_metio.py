@@ -4,7 +4,7 @@ import httpx
 
 from src.config import Config
 from src.weather.api.open_meteo import ApiOpenMetio
-from src.weather.models.code.weather import Weather, WeatherList
+from src.weather.models.domain.weather import Weather, WeatherList
 from src.weather.models.dto.get_weather_request import GetWeatherRequestDTO
 
 

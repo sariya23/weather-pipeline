@@ -2,7 +2,7 @@ from typing import Protocol
 
 from httpx import Response
 
-from src.weather.models.code.weather import WeatherList
+from src.weather.models.domain.weather import WeatherList
 from src.weather.models.dto.get_weather_request import GetWeatherRequestDTO
 
 

@@ -3,7 +3,8 @@ from dataclasses import asdict
 
 import psycopg2
 
-from config import Config
+from src.config import Config
+from src.db.dto.city import City
 from src.weather.models.dto.insert_weather import InsertWeatherDTO
 import logging
 
@@ -17,8 +18,7 @@ class PostgresClient:
             port=config.port,
             dbname=config.name,
             user=config.user,
-            password=config.password.get_secret_value(),
-            autocommit=False,
+            password=config.password.get_secret_value()
         )
 
     def close(self) -> None:
@@ -40,6 +40,14 @@ class PostgresClient:
         except Exception as e:
             self.__conn.rollback()
             logger.error(f"Failed to insert {len(weathers)} weathers with exp %s", e)
+
+    def get_city_coordinates(self, long: float, lat: float) -> City:
+        query = "select * from city where longitude=%s and latitude=%s;"
+        with self.__conn.cursor() as cursor:
+            cursor.execute(query, [long, lat])
+            res = cursor.fetchone()
+        return res
+
 
 
 

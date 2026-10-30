@@ -7,7 +7,7 @@ from pydantic import BaseModel
 class WeatherLocation(BaseModel):
     longitude: float
     latitude: float
-    city_name: str
+    city_name: str | None = None
 
 class Weather(BaseModel):
     timestamp: datetime

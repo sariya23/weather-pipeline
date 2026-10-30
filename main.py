@@ -4,10 +4,11 @@ from datetime import datetime
 
 from geopy.geocoders import Nominatim
 
+from src.db.postgres import PostgresClient
 from src.config import Config
 from src.weather.api.open_meteo import ApiOpenMetio
 from src.weather.core.weather import WeatherCore
-from src.weather.models.code.weather import WeatherList
+from src.weather.models.domain.weather import WeatherList
 from src.weather.models.dto.get_weather_request import GetWeatherRequestDTO
 
 logging.basicConfig(
@@ -37,6 +38,11 @@ def main(config_path: str, city_list: list[str], start_date: datetime, end_date:
             logger.error(e)
             continue
 
+    db = PostgresClient(config)
+    for i in city_list:
+        city_location = geolocator.geocode(i)
+        long, lat = city_location.longitude, city_location.latitude
+        db.get_city_coordinates(long, lat)
     return weather_measures
 
 if __name__ == '__main__':
