@@ -1,10 +1,13 @@
 import argparse
+from datetime import datetime
+
 from src.config import Config
 
 import logging
 
 from src.weather.api.open_meteo import ApiOpenMetio
 from src.weather.models.dto.get_weather_request import GetWeatherRequestDTO
+from src.weather.core.weather import WeatherCore
 
 logging.basicConfig(
     level=logging.INFO,
@@ -22,7 +25,10 @@ def main():
 
     config = Config(_env_file=args.config)
     open_meteo_api = ApiOpenMetio(config.base_url)
-    weather = Weather(weather_source=open_meteo_api)
+    weather = WeatherCore(weather_api=[open_meteo_api])
+    return weather.get_weather(GetWeatherRequestDTO.moscow(hourly=[
+        'temperature_2m', 'relative_humidity_2m', 'rain,wind_speed_10m'],
+        start_date=datetime.today(), end_date=datetime.today()))
 
 
 
