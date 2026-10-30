@@ -21,7 +21,10 @@ CREATE TABLE IF NOT EXISTS weather (
     temperature_cel_2m DOUBLE PRECISION NOT NULL,
     wind_speed_10m DOUBLE PRECISION NOT NULL,
     relative_humidity_2m DOUBLE PRECISION NOT NULL,
+    measure_timestamp timestamp not null,
     source_id INTEGER NOT NULL,
+    created_at timestamp not null default current_timestamp,
+    updated_at timestamp,
 
     CONSTRAINT fk_weather_city
         FOREIGN KEY (city_id)
@@ -29,7 +32,10 @@ CREATE TABLE IF NOT EXISTS weather (
 
     CONSTRAINT fk_weather_source
         FOREIGN KEY (source_id)
-        REFERENCES source(id)
+        REFERENCES source(id),
+
+	CONSTRAINT weather_measurement_unique
+		UNIQUE (city_id, source_id, measure_timestamp)
 );
 -- +goose StatementEnd
 

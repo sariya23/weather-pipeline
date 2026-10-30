@@ -1,9 +1,11 @@
-import httpx
-from dataclasses import asdict
 import logging
+from dataclasses import asdict
 
-from src.weather.models.dto.get_weather_request import GetWeatherRequestDTO
+import httpx
+
 from src.weather.models.code.weather import Weather, WeatherList, WeatherLocation
+from src.weather.models.dto.get_weather_request import GetWeatherRequestDTO
+
 logger = logging.getLogger(__name__)
 
 class ApiOpenMetio:

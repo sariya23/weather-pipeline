@@ -1,15 +1,14 @@
 import argparse
+import logging
 from datetime import datetime
+
 from geopy.geocoders import Nominatim
 
 from src.config import Config
-
-import logging
-
 from src.weather.api.open_meteo import ApiOpenMetio
-from src.weather.models.dto.get_weather_request import GetWeatherRequestDTO
 from src.weather.core.weather import WeatherCore
 from src.weather.models.code.weather import WeatherList
+from src.weather.models.dto.get_weather_request import GetWeatherRequestDTO
 
 logging.basicConfig(
     level=logging.INFO,
