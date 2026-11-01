@@ -5,18 +5,20 @@ from datetime import UTC, datetime
 from geopy.geocoders import Nominatim
 
 import config
+import src.lib.log  # noqa
+from src.app.app import App, Core, Database
+from src.city.db.city import CityPostgres
+from src.city.models.domain.city import CityList
 from src.config import Config
-from src.db.dto.city import CityList
-from src.db.dto.source import SourceList
-from src.db.postgres import PostgresClient
 from src.models.coordinate import Coordinate
+from src.source.db.source import SourcePostgres
+from src.source.models.domain.source import SourceList
 from src.weather.api.open_meteo import ApiOpenMetio
 from src.weather.core.weather import WeatherCore
+from src.weather.db.weather import WeatherPostgres
 from src.weather.models.domain.weather import WeatherList
 from src.weather.models.dto.get_weather_request import GetWeatherRequestDTO
 from src.weather.models.dto.insert_weather import InsertWeatherDTO
-import src.lib.log
-
 
 logger = logging.getLogger(__name__)
 
@@ -26,10 +28,15 @@ def main(
 ):
     geolocator = Nominatim(user_agent="weather-pipe")
     open_meteo_api = ApiOpenMetio(config.base_url)
-    weather = WeatherCore(weather_api=[open_meteo_api])
     weather_measures = WeatherList()
-    db = PostgresClient(config)
-
+    app = App(
+        db=Database(
+            weather=WeatherPostgres(config),
+            city=CityPostgres(config),
+            source=SourcePostgres(config),
+        ),
+        core=Core(weather=WeatherCore(weather_api=[open_meteo_api])),
+    )
     for city in city_list:
         try:
             city_location = geolocator.geocode(city)
@@ -45,7 +52,7 @@ def main(
                 start_date=start_date,
                 end_date=end_date,
             )
-            weather_measure = weather.get_weather(req)
+            weather_measure = app.core.weather.get_weather(req)
             logger.info(
                 "success get weather measures for city %s total measures %s",
                 city,
@@ -61,12 +68,14 @@ def main(
         city_location = geolocator.geocode(i)
         long, lat = city_location.longitude, city_location.latitude
         cities.append(
-            db.get_city_by_coordinates(Coordinate(longitude=long, latitude=lat))
+            app.db.city.get_city_by_coordinates(
+                Coordinate(longitude=long, latitude=lat)
+            )
         )
 
     sources = SourceList()
     for source in weather_measures.sources:
-        sources.append(db.get_source_by_name(source))
+        sources.append(app.db.source.get_source_by_name(source))
 
     to_insert = []
     for weather_measure in weather_measures:
@@ -82,7 +91,7 @@ def main(
                 measure_timestamp=weather_measure.timestamp,
             )
         )
-    db.insert_weathers(to_insert)
+    app.db.weather.insert_weathers(to_insert)
 
 
 if __name__ == "__main__":
@@ -106,7 +115,12 @@ if __name__ == "__main__":
     config = Config(_env_file=args.config)
     if config.env == "local":
         logger.setLevel(logging.DEBUG)
-    logger.info('Pipeline config: (start_date=%s, end_date=%s env=%s)', start_date, end_date, config.env)
+    logger.info(
+        "Pipeline config: (start_date=%s, end_date=%s env=%s)",
+        start_date,
+        end_date,
+        config.env,
+    )
     print(
         main(
             config=config,
