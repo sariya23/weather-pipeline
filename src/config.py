@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings
 
 class Config(BaseSettings):
     base_url: str = Field(validation_alias="BASE_URL")
+    env: str = Field(validation_alias="ENV")
     host: str = Field(validation_alias="POSTGRES_HOST")
     port: int = Field(validation_alias="POSTGRES_PORT")
     user: str = Field(validation_alias="POSTGRES_USER")

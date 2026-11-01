@@ -27,7 +27,7 @@ class ApiOpenMetio:
                 params_dict["start_date"] = params.start_date.strftime("%Y-%m-%d")
             if params.end_date:
                 params_dict["end_date"] = params.end_date.strftime("%Y-%m-%d")
-            logger.info(f"params: {params_dict}, url: {self.__base_url}")
+            logger.debug(f"params: {params_dict}, url: {self.__base_url}")
             response = client.get(self.base_url, params=params_dict)
             return response
 

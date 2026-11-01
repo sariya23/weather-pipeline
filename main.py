@@ -1,29 +1,29 @@
 import argparse
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 
 from geopy.geocoders import Nominatim
 
-from src.db.dto.source import SourceList
-from src.db.dto.city import CityList
-from src.db.postgres import PostgresClient
+import config
 from src.config import Config
+from src.db.dto.city import CityList
+from src.db.dto.source import SourceList
+from src.db.postgres import PostgresClient
 from src.models.coordinate import Coordinate
 from src.weather.api.open_meteo import ApiOpenMetio
 from src.weather.core.weather import WeatherCore
 from src.weather.models.domain.weather import WeatherList
 from src.weather.models.dto.get_weather_request import GetWeatherRequestDTO
-from weather.models.dto.insert_weather import InsertWeatherDTO
+from src.weather.models.dto.insert_weather import InsertWeatherDTO
+import src.lib.log
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
-)
 
 logger = logging.getLogger(__name__)
 
-def main(config_path: str, city_list: list[str], start_date: datetime, end_date: datetime):
-    config = Config(_env_file=config_path)
+
+def main(
+    config: Config, city_list: list[str], start_date: datetime, end_date: datetime
+):
     geolocator = Nominatim(user_agent="weather-pipe")
     open_meteo_api = ApiOpenMetio(config.base_url)
     weather = WeatherCore(weather_api=[open_meteo_api])
@@ -34,10 +34,23 @@ def main(config_path: str, city_list: list[str], start_date: datetime, end_date:
         try:
             city_location = geolocator.geocode(city)
             long, lat = city_location.longitude, city_location.latitude
-            req = GetWeatherRequestDTO(hourly=['temperature_2m', 'relative_humidity_2m', 'rain,wind_speed_10m'],
-                                       longitude=long, latitude=lat, start_date=start_date, end_date=end_date)
+            req = GetWeatherRequestDTO(
+                hourly=[
+                    "temperature_2m",
+                    "relative_humidity_2m",
+                    "rain,wind_speed_10m",
+                ],
+                longitude=long,
+                latitude=lat,
+                start_date=start_date,
+                end_date=end_date,
+            )
             weather_measure = weather.get_weather(req)
-            logger.info("success get weather measures for city %s total measures %s", city, len(weather_measure))
+            logger.info(
+                "success get weather measures for city %s total measures %s",
+                city,
+                len(weather_measure),
+            )
             weather_measures.extend(weather_measure)
         except Exception as e:
             logger.error(e)
@@ -47,7 +60,9 @@ def main(config_path: str, city_list: list[str], start_date: datetime, end_date:
     for i in city_list:
         city_location = geolocator.geocode(i)
         long, lat = city_location.longitude, city_location.latitude
-        cities.append(db.get_city_by_coordinates(Coordinate(longitude=long, latitude=lat)))
+        cities.append(
+            db.get_city_by_coordinates(Coordinate(longitude=long, latitude=lat))
+        )
 
     sources = SourceList()
     for source in weather_measures.sources:
@@ -55,21 +70,48 @@ def main(config_path: str, city_list: list[str], start_date: datetime, end_date:
 
     to_insert = []
     for weather_measure in weather_measures:
-        to_insert.append(InsertWeatherDTO(city_id=cities.get_by_coordinates(weather_measure.location.coordinates).id,
-                                          temperature=weather_measure.temperature_cel_2m,
-                                          wind_speed=weather_measure.wind_speed_10m,
-                                          relative_humidity=weather_measure.relative_humidity_2m,
-                                          source_id=sources.get_by_name(weather_measure.source).id,
-                                          measure_timestamp=weather_measure.timestamp))
+        to_insert.append(
+            InsertWeatherDTO(
+                city_id=cities.get_by_coordinates(
+                    weather_measure.location.coordinates
+                ).id,
+                temperature=weather_measure.temperature_cel_2m,
+                wind_speed=weather_measure.wind_speed_10m,
+                relative_humidity=weather_measure.relative_humidity_2m,
+                source_id=sources.get_by_name(weather_measure.source).id,
+                measure_timestamp=weather_measure.timestamp,
+            )
+        )
     db.insert_weathers(to_insert)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-                        prog='WeatherPipeline',
-                        description='Pipeline for downloading weather data')
-    parser.add_argument('config')
+        prog="WeatherPipeline", description="Pipeline for downloading weather data"
+    )
+    parser.add_argument("--config", required=True)
+    parser.add_argument(
+        "--start-date",
+        default=datetime.now(tz=UTC).date().strftime("%Y-%m-%d"),
+        help="format %Y-%m-%d",
+    )
+    parser.add_argument(
+        "--end-date",
+        default=datetime.now(tz=UTC).date().strftime("%Y-%m-%d"),
+        help="format %Y-%m-%d",
+    )
     args = parser.parse_args()
-    print(main(config_path=args.config,
-               city_list=['Moscow', 'Kazan', 'Saint Petersburg'],
-               start_date=datetime(2026, 10, 29),
-               end_date=datetime(2026, 10, 29)))
+    start_date = datetime.strptime(args.start_date, "%Y-%m-%d")
+    end_date = datetime.strptime(args.end_date, "%Y-%m-%d")
+    config = Config(_env_file=args.config)
+    if config.env == "local":
+        logger.setLevel(logging.DEBUG)
+    logger.info('Pipeline config: (start_date=%s, end_date=%s env=%s)', start_date, end_date, config.env)
+    print(
+        main(
+            config=config,
+            city_list=["Moscow", "Kazan", "Saint Petersburg"],
+            start_date=start_date,
+            end_date=end_date,
+        )
+    )

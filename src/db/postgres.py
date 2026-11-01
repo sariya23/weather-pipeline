@@ -51,6 +51,8 @@ class PostgresClient:
         with self.__conn.cursor() as cursor:
             cursor.execute(query, [coordinates.longitude, coordinates.latitude])
             res = cursor.fetchone()
+
+        logger.debug('successfully get city by coordinates %s', res)
         return City(
             id=res["id"],
             city=res["city"],
@@ -64,6 +66,7 @@ class PostgresClient:
         with self.__conn.cursor() as cursor:
             cursor.execute(query, [name])
             res = cursor.fetchone()
+        logger.debug('successfully get source by name %s', res)
         return Source(
             id=res["id"],
             source_name=res["source_name"],
