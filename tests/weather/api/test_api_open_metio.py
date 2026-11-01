@@ -2,6 +2,7 @@ from datetime import date, datetime
 
 import httpx
 
+from src.models.coordinate import Coordinate
 from src.config import Config
 from src.weather.api.open_meteo import ApiOpenMetio
 from src.weather.models.domain.weather import Weather, WeatherList
@@ -48,7 +49,7 @@ class TestApiOpenMetio:
             },
         })
 
-        result = api.response_to_domain(response)
+        result = api.response_to_domain(response, Coordinate(latitude=55.75, longitude=37.62))
 
         assert isinstance(result, WeatherList)
         assert len(result) == 3
@@ -63,5 +64,5 @@ class TestApiOpenMetio:
             assert weather.temperature_cel_2m == temperature
             assert weather.wind_speed_10m == wind_speed
             assert weather.relative_humidity_2m == humidity
-            assert weather.location.latitude == 55.75
-            assert weather.location.longitude == 37.62
+            assert weather.location.coordinates.latitude == 55.75
+            assert weather.location.coordinates.longitude == 37.62

@@ -44,7 +44,7 @@ class PostgresClient:
             logger.info(f"Successfully inserted {len(weathers)} weathers")
         except Exception as e:
             self.__conn.rollback()
-            logger.error(f"Failed to insert {len(weathers)} weathers with exp %s", e)
+            logger.error(f"Failed to insert {len(weathers)} weathers with exp '%s'", e)
 
     def get_city_by_coordinates(self, coordinates: Coordinate) -> City:
         query = "select * from city where longitude=%s and latitude=%s;"

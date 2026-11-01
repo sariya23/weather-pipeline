@@ -31,14 +31,11 @@ class ApiOpenMetio:
             response = client.get(self.base_url, params=params_dict)
             return response
 
-    def response_to_domain(self, response: httpx.Response) -> WeatherList:
+    def response_to_domain(self, response: httpx.Response, coordinates: Coordinate) -> WeatherList:
         data = response.json()
         hourly = data["hourly"]
         location = WeatherLocation(
-            coordinates=Coordinate(
-                longitude=data["longitude"],
-                latitude=data["latitude"],
-            )
+            coordinates=coordinates
         )
         return WeatherList(
             Weather(
