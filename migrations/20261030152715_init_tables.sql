@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS city (
 
 CREATE TABLE IF NOT EXISTS source (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    source_name TEXT NOT NULL,
+    source_name TEXT NOT NULL UNIQUE,
     source_url text
 );
 

@@ -3,10 +3,11 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from src.models.coordinate import Coordinate
+
 
 class WeatherLocation(BaseModel):
-    longitude: float
-    latitude: float
+    coordinates: Coordinate
     city_name: str | None = None
 
 class Weather(BaseModel):
@@ -18,4 +19,6 @@ class Weather(BaseModel):
     source: str | None = None
 
 class WeatherList(UserList):
-    pass
+    @property
+    def sources(self) -> list[str]:
+        return list(set(i.source for i in self.data))

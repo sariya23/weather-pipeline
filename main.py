@@ -4,6 +4,8 @@ from datetime import datetime
 
 from geopy.geocoders import Nominatim
 
+from src.db.dto.source import SourceList
+from src.db.dto.city import CityList
 from src.db.postgres import PostgresClient
 from src.config import Config
 from src.models.coordinate import Coordinate
@@ -11,6 +13,7 @@ from src.weather.api.open_meteo import ApiOpenMetio
 from src.weather.core.weather import WeatherCore
 from src.weather.models.domain.weather import WeatherList
 from src.weather.models.dto.get_weather_request import GetWeatherRequestDTO
+from weather.models.dto.insert_weather import InsertWeatherDTO
 
 logging.basicConfig(
     level=logging.INFO,
@@ -40,13 +43,24 @@ def main(config_path: str, city_list: list[str], start_date: datetime, end_date:
             logger.error(e)
             continue
 
-
+    cities = CityList()
     for i in city_list:
         city_location = geolocator.geocode(i)
         long, lat = city_location.longitude, city_location.latitude
-        city = db.get_city_by_coordinates(Coordinate(longitude=long, latitude=lat))
+        cities.append(db.get_city_by_coordinates(Coordinate(longitude=long, latitude=lat)))
 
-    return weather_measures
+    sources = SourceList()
+    for source in weather_measures.sources:
+        sources.append(db.get_source_by_name(source))
+
+    to_insert = []
+    for weather_measure in weather_measures:
+        to_insert.append(InsertWeatherDTO(city_id=cities.get_by_coordinates(weather_measure.location.coordinates).id,
+                                          temperature=weather_measure.temperature_cel_2m,
+                                          wind_speed=weather_measure.wind_speed_10m,
+                                          relative_humidity=weather_measure.relative_humidity_2m,
+                                          source_id=sources.get_by_name(weather_measure.source)))
+    db.insert_weathers(to_insert)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(

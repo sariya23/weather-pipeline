@@ -6,6 +6,7 @@ from psycopg2.extras import RealDictCursor
 
 from src.config import Config
 from src.db.dto.city import City
+from src.db.dto.source import Source
 from src.models.coordinate import Coordinate
 from src.weather.models.dto.insert_weather import InsertWeatherDTO
 
@@ -56,4 +57,15 @@ class PostgresClient:
             coordinates=Coordinate(
                 longitude=res["longitude"], latitude=res["latitude"]
             ),
+        )
+
+    def get_source_by_name(self, name: str) -> Source:
+        query = "select * from source where source_name=%s;"
+        with self.__conn.cursor() as cursor:
+            cursor.execute(query, [name])
+            res = cursor.fetchone()
+        return Source(
+            id=res["id"],
+            source_name=res["source_name"],
+            source_url=res.get("source_url"),
         )
