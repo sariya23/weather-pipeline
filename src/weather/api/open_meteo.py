@@ -56,7 +56,7 @@ class ApiOpenMeteo:
                 Weather(
                     timestamp=timestamp + timedelta(seconds=utc_offset_seconds),
                     temperature_cel_2m=temperature,
-                    wind_speed_10m=wind_speed,
+                    wind_speed_mm_10m=wind_speed,
                     relative_humidity_2m=humidity,
                     location=location,
                     rain_mm=rain,

@@ -85,7 +85,7 @@ def main(
                     weather_measure.location.coordinates
                 ).id,
                 temperature=weather_measure.temperature_cel_2m,
-                wind_speed=weather_measure.wind_speed_10m,
+                wind_speed=weather_measure.wind_speed_mm_10m,
                 relative_humidity=weather_measure.relative_humidity_2m,
                 source_id=sources.get_by_name(weather_measure.source).id,
                 measure_timestamp=weather_measure.timestamp,

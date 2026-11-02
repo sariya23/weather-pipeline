@@ -62,7 +62,7 @@ class TestApiOpenMetio:
             assert isinstance(weather, Weather)
             assert weather.timestamp == timestamp
             assert weather.temperature_cel_2m == temperature
-            assert weather.wind_speed_10m == wind_speed
+            assert weather.wind_speed_mm_10m == wind_speed
             assert weather.relative_humidity_2m == humidity
             assert weather.location.coordinates.latitude == 55.75
             assert weather.location.coordinates.longitude == 37.62
