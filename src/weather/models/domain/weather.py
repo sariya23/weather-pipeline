@@ -12,9 +12,10 @@ class WeatherLocation(BaseModel):
 
 class Weather(BaseModel):
     timestamp: datetime
-    temperature_cel_2m: float
-    wind_speed_10m: float
-    relative_humidity_2m: float
+    temperature_cel_2m: float| None
+    wind_speed_10m: float | None
+    relative_humidity_2m: float | None
+    rain_mm: float| None
     location: WeatherLocation
     source: str | None = None
 

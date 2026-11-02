@@ -13,7 +13,7 @@ from src.config import Config
 from src.models.coordinate import Coordinate
 from src.source.db.source import SourcePostgres
 from src.source.models.domain.source import SourceList
-from src.weather.api.open_meteo import ApiOpenMetio
+from src.weather.api.open_meteo import ApiOpenMeteo
 from src.weather.core.weather import WeatherCore
 from src.weather.db.weather import WeatherPostgres
 from src.weather.models.domain.weather import WeatherList
@@ -27,7 +27,7 @@ def main(
     config: Config, city_list: list[str], start_date: datetime, end_date: datetime
 ):
     geolocator = Nominatim(user_agent="weather-pipe")
-    open_meteo_api = ApiOpenMetio(config.base_url)
+    open_meteo_api = ApiOpenMeteo(config.base_url)
     weather_measures = WeatherList()
     app = App(
         db=Database(

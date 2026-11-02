@@ -1,5 +1,6 @@
 import logging
 from dataclasses import asdict
+from datetime import timedelta
 
 import httpx
 
@@ -10,7 +11,7 @@ from src.weather.models.dto.get_weather_request import GetWeatherRequestDTO
 logger = logging.getLogger(__name__)
 
 
-class ApiOpenMetio:
+class ApiOpenMeteo:
     source_name = "open-meteo"
 
     def __init__(self, base_url: str):
@@ -31,25 +32,34 @@ class ApiOpenMetio:
             response = client.get(self.base_url, params=params_dict)
             return response
 
-    def response_to_domain(self, response: httpx.Response, coordinates: Coordinate) -> WeatherList:
+    def response_to_domain(
+        self, response: httpx.Response, coordinates: Coordinate
+    ) -> WeatherList:
         data = response.json()
-        hourly = data["hourly"]
-        location = WeatherLocation(
-            coordinates=coordinates
-        )
-        return WeatherList(
-            Weather(
-                timestamp=timestamp,
-                temperature_cel_2m=temperature,
-                wind_speed_10m=wind_speed,
-                relative_humidity_2m=humidity,
-                location=location,
+        hourly = data.get("hourly")
+        if not hourly:
+            logger.debug(f"no hourly data")
+            return WeatherList([])
+        utc_offset_seconds = data.get("utc_offset_seconds", 0)
+        location = WeatherLocation(coordinates=coordinates)
+        res = WeatherList()
+
+        for timestamp, temperature, wind_speed, humidity, rain in zip(
+            hourly["time"],
+            hourly["temperature_2m"],
+            hourly["wind_speed_10m"],
+            hourly["relative_humidity_2m"],
+            hourly["rain"],
+            strict=True,
+        ):
+            res.append(
+                Weather(
+                    timestamp=timestamp + timedelta(seconds=utc_offset_seconds),
+                    temperature_cel_2m=temperature,
+                    wind_speed_10m=wind_speed,
+                    relative_humidity_2m=humidity,
+                    location=location,
+                    rain_mm=rain,
+                )
             )
-            for timestamp, temperature, wind_speed, humidity in zip(
-                hourly["time"],
-                hourly["temperature_2m"],
-                hourly["wind_speed_10m"],
-                hourly["relative_humidity_2m"],
-                strict=True,
-            )
-        )
+        return res

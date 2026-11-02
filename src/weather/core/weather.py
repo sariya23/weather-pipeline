@@ -20,19 +20,18 @@ class IGetWeather(Protocol):
 
 
 class WeatherCore:
-    def __init__(self, weather_api: list[IGetWeather]):
+    def __init__(self, weather_api: IGetWeather):
         self.__weather_api = weather_api
 
     def get_weather(self, params: GetWeatherRequestDTO) -> WeatherList:
         result = WeatherList()
-        for api_client in self.__weather_api:
-            response = api_client.get_weather(params)
-            response.raise_for_status()
-            models = api_client.response_to_domain(
-                response,
-                Coordinate(latitude=params.latitude, longitude=params.longitude),
-            )
-            for model in models:
-                model.source = api_client.source_name
-            result.extend(models)
+        response = self.__weather_api.get_weather(params)
+        response.raise_for_status()
+        models = self.__weather_api.response_to_domain(
+            response,
+            Coordinate(latitude=params.latitude, longitude=params.longitude),
+        )
+        for model in models:
+            model.source = self.__weather_api.source_name
+        result.extend(models)
         return result
