@@ -1,6 +1,7 @@
+
 import logging
 from dataclasses import asdict
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 import httpx
 
@@ -54,7 +55,7 @@ class ApiOpenMeteo:
         ):
             res.append(
                 Weather(
-                    timestamp=timestamp + timedelta(seconds=utc_offset_seconds),
+                    timestamp=datetime.strptime(timestamp, '%Y-%m-%dT%H:%M') + timedelta(seconds=utc_offset_seconds),
                     temperature_cel_2m=temperature,
                     wind_speed_mm_10m=wind_speed,
                     relative_humidity_2m=humidity,

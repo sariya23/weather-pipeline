@@ -4,7 +4,6 @@ from datetime import UTC, datetime
 
 from geopy.geocoders import Nominatim
 
-import config
 import src.lib.log  # noqa
 from src.app.app import App, Core, Database
 from src.city.db.city import CityPostgres
@@ -35,7 +34,7 @@ def main(
             city=CityPostgres(config),
             source=SourcePostgres(config),
         ),
-        core=Core(weather=WeatherCore(weather_api=[open_meteo_api])),
+        core=Core(weather=WeatherCore(weather_api=open_meteo_api)),
     )
     for city in city_list:
         try:
@@ -89,6 +88,7 @@ def main(
                 relative_humidity=weather_measure.relative_humidity_2m,
                 source_id=sources.get_by_name(weather_measure.source).id,
                 measure_timestamp=weather_measure.timestamp,
+                rain=weather_measure.rain_mm
             )
         )
     app.db.weather.insert_weathers(to_insert)
