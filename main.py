@@ -39,7 +39,7 @@ def main(
     places = app.db.place.all()
     for place in place_list:
         try:
-            city, region, country = place.split(' ')
+            city, region, country = place.split('/')
             city_location = geolocator.geocode(f'{city} {region} {country}')
             long, lat = city_location.longitude, city_location.latitude
             req = GetWeatherRequestDTO(
@@ -115,7 +115,7 @@ if __name__ == "__main__":
     print(
         main(
             config=config,
-            place_list=["Moscow Moscow Russia", "Kazan Tatarstan Russia", "Saint Petersburg Saint Petersburg Russia"],
+            place_list=["Moscow/Moscow/Russia", "Kazan/Tatarstan/Russia", "Saint Petersburg/Saint Petersburg/Russia"],
             start_date=start_date,
             end_date=end_date,
         )
