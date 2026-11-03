@@ -4,7 +4,7 @@ from datetime import datetime
 
 @dataclass
 class InsertWeatherDTO:
-    city_id: int
+    place_id: int
     temperature: float| None
     wind_speed: float| None
     relative_humidity: float| None

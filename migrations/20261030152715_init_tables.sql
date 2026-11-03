@@ -9,7 +9,7 @@ create table if not exists region (
 create table if not exists country (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	country text not null unique
-)
+);
 
 CREATE TABLE IF NOT EXISTS place (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS place (
     region_id int not null,
     country_id int not null,
 
-    CONSTRAINT unique_place unique (city, region, country),
+    CONSTRAINT unique_place unique (city, region_id, country_id),
 
 	CONSTRAINT fk_region_id
 	FOREIGN KEY (region_id)
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS place (
 
 	CONSTRAINT fk_country_id
 	FOREIGN KEY (country_id)
-	REFERENCES country(id),
+	REFERENCES country(id)
 );
 
 CREATE TABLE IF NOT EXISTS source (
@@ -55,11 +55,11 @@ CREATE TABLE IF NOT EXISTS weather (
         REFERENCES source(id),
 
 	CONSTRAINT weather_measurement_unique
-		UNIQUE (city_id, source_id, measure_timestamp)
+		UNIQUE (place_id, source_id, measure_timestamp)
 );
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-drop table if exists city, weather, source;
+drop table if exists place, weather, source;
 -- +goose StatementEnd

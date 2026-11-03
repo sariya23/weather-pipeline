@@ -53,8 +53,8 @@ def main(
                 start_date=start_date,
                 end_date=end_date,
             )
-            place = places
-            weather_measure = app.core.weather.get_weather(req)
+            place = places.get_place(city, region, country)
+            weather_measure = app.core.weather.get_weather(req, place)
             logger.info(
                 "success get weather measures for city %s total measures %s",
                 city,
@@ -73,9 +73,7 @@ def main(
     for weather_measure in weather_measures:
         to_insert.append(
             InsertWeatherDTO(
-                city_id=cities.get_by_coordinates(
-                    weather_measure.location.coordinates
-                ).id,
+                place_id=weather_measure.place.id,
                 temperature=weather_measure.temperature_cel_2m,
                 wind_speed=weather_measure.wind_speed_mm_10m,
                 relative_humidity=weather_measure.relative_humidity_2m,
@@ -117,7 +115,7 @@ if __name__ == "__main__":
     print(
         main(
             config=config,
-            city_list=["Moscow", "Kazan", "Saint Petersburg"],
+            place_list=["Moscow Moscow Russia", "Kazan Tatarstan Russia", "Saint Petersburg Saint Petersburg Russia"],
             start_date=start_date,
             end_date=end_date,
         )
