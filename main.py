@@ -5,10 +5,8 @@ from datetime import UTC, datetime
 from geopy.geocoders import Nominatim
 
 import src.lib.log  # noqa
-from src.place.models.domain.place import PlaceList
 from src.app.app import App, Core, Database
 from src.config import Config
-from src.models.coordinate import Coordinate
 from src.place.db.place import PlacePostgres
 from src.source.db.source import SourcePostgres
 from src.source.models.domain.source import SourceList
@@ -39,31 +37,47 @@ def main(
     places = app.db.place.all()
     for place in place_list:
         try:
-            city, region, country = place.split('/')
-            city_location = geolocator.geocode(f'{city} {region} {country}')
-            long, lat = city_location.longitude, city_location.latitude
-            req = GetWeatherRequestDTO(
-                hourly=[
-                    "temperature_2m",
-                    "relative_humidity_2m",
-                    "rain,wind_speed_10m",
-                ],
-                longitude=long,
-                latitude=lat,
-                start_date=start_date,
-                end_date=end_date,
+            city, region, country = place.split("/")
+        except ValueError as e:
+            logger.error(
+                "cannot parse (%s) 'city', 'region, 'country' with error '%s', please check format, use city/region/country",
+                e,
+                place,
             )
-            place = places.get_place(city, region, country)
-            weather_measure = app.core.weather.get_weather(req, place)
-            logger.info(
-                "success get weather measures for city %s total measures %s",
-                city,
-                len(weather_measure),
-            )
-            weather_measures.extend(weather_measure)
-        except Exception as e:
-            logger.error(e)
             continue
+        except Exception as e:
+            logger.error("unexpected error while parsing place: %s", e)
+            continue
+        city_location = geolocator.geocode(f"{city} {region} {country}")
+        long, lat = city_location.longitude, city_location.latitude
+        req = GetWeatherRequestDTO(
+            hourly=[
+                "temperature_2m",
+                "relative_humidity_2m",
+                "rain,wind_speed_10m",
+            ],
+            longitude=long,
+            latitude=lat,
+            start_date=start_date,
+            end_date=end_date,
+        )
+        try:
+            place = places.get_place(city, region, country)
+        except ValueError as e:
+            logger.error(
+                "cannot get place (%s/%s/%s) with error '%s'", city, region, country, e
+            )
+            continue
+        except Exception as e:
+            logger.error("unexpected error while getting place: %s", e)
+            continue
+        weather_measure = app.core.weather.get_weather(req, place)
+        logger.info(
+            "success get weather measures for city %s total measures %s",
+            city,
+            len(weather_measure),
+        )
+        weather_measures.extend(weather_measure)
 
     sources = SourceList()
     for source in weather_measures.sources:
@@ -79,12 +93,12 @@ def main(
                 relative_humidity=weather_measure.relative_humidity_2m,
                 source_id=sources.get_by_name(weather_measure.source).id,
                 measure_timestamp=weather_measure.timestamp,
-                rain=weather_measure.rain_mm
+                rain=weather_measure.rain_mm,
             )
         )
     try:
         app.db.weather.insert_weathers(to_insert)
-    except Exception as e:
+    except Exception:
         pass
 
 
@@ -118,7 +132,11 @@ if __name__ == "__main__":
     print(
         main(
             config=config,
-            place_list=["Moscow/Moscow/Russia", "Kazan/Tatarstan/Russia", "Saint Petersburg/Saint Petersburg/Russia"],
+            place_list=[
+                "Moscow/Moscow/Russia",
+                "Kazan/Tatarstan/Russia",
+                "Saint Petersburg/Saint Petersburg/Russia",
+            ],
             start_date=start_date,
             end_date=end_date,
         )
