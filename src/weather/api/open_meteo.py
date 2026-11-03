@@ -5,8 +5,8 @@ from datetime import timedelta, datetime
 
 import httpx
 
-from src.models.coordinate import Coordinate
-from src.weather.models.domain.weather import Weather, WeatherList, WeatherLocation
+from src.place.models.domain.place import Place
+from src.weather.models.domain.weather import Weather, WeatherList
 from src.weather.models.dto.get_weather_request import GetWeatherRequestDTO
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ class ApiOpenMeteo:
             return response
 
     def response_to_domain(
-        self, response: httpx.Response, coordinates: Coordinate
+        self, response: httpx.Response, place: Place,
     ) -> WeatherList:
         data = response.json()
         hourly = data.get("hourly")
@@ -42,7 +42,6 @@ class ApiOpenMeteo:
             logger.debug(f"no hourly data")
             return WeatherList([])
         utc_offset_seconds = data.get("utc_offset_seconds", 0)
-        location = WeatherLocation(coordinates=coordinates)
         res = WeatherList()
 
         for timestamp, temperature, wind_speed, humidity, rain in zip(
@@ -59,7 +58,7 @@ class ApiOpenMeteo:
                     temperature_cel_2m=temperature,
                     wind_speed_mm_10m=wind_speed,
                     relative_humidity_2m=humidity,
-                    location=location,
+                    place=place,
                     rain_mm=rain,
                 )
             )

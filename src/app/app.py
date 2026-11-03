@@ -3,8 +3,8 @@ from typing import Protocol
 
 import httpx
 
+from src.place.models.domain.place import Place, PlaceList
 from src.source.models.domain.source import Source
-from src.city.models.domain.city import City
 from src.models.coordinate import Coordinate
 from src.weather.models.domain.weather import WeatherList
 from src.weather.models.dto.get_weather_request import GetWeatherRequestDTO
@@ -16,8 +16,11 @@ class IWeatherQueries(Protocol):
         pass
 
 
-class ICityQueries(Protocol):
-    def get_city_by_coordinates(self, coordinates: Coordinate) -> City:
+class IPlaceQueries(Protocol):
+    def get_city(self, region: str, country: str, city: str) -> Place:
+        pass
+
+    def all(self) -> PlaceList:
         pass
 
 class ISourceQueries(Protocol):
@@ -29,19 +32,18 @@ class IOpenMeteoApi(Protocol):
         pass
 
     def response_to_domain(
-        self, response: httpx.Response, coordinates: Coordinate
+        self, response: httpx.Response, place: Place
     ) -> WeatherList:
         pass
 
 class IWeatherCore(Protocol):
-    def get_weather(self, params: GetWeatherRequestDTO) -> WeatherList:
+    def get_weather(self, params: GetWeatherRequestDTO, place: Place) -> WeatherList:
         pass
-
 
 @dataclass
 class Database:
     weather: IWeatherQueries
-    city: ICityQueries
+    place: IPlaceQueries
     source: ISourceQueries
 
 @dataclass
