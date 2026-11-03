@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS weather (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     place_id INTEGER NOT NULL,
     temperature_cel_2m DOUBLE PRECISION,
-    wind_speed_ms_10m DOUBLE PRECISION,
+    wind_speed_kmh_10m DOUBLE PRECISION,
     relative_humidity_2m DOUBLE PRECISION,
     measure_timestamp timestamp not null,
     rain_mm DOUBLE PRECISION,
