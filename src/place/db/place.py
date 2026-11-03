@@ -23,7 +23,7 @@ class PlacePostgres(PostgresClient):
 
     def all(self) -> PlaceList:
         with self._conn.cursor() as cursor:
-            cursor.execute("select * from place;")
+            cursor.execute("select p.id, city, r.region, c.country from place p join region r on p.region_id = r.id join country c on c.id = p.country_id;")
             res = cursor.fetchall()
         return PlaceList(
             Place(id=p["id"], city=p["city"], region=p["region"], country=p["country"])
