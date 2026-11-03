@@ -82,7 +82,10 @@ def main(
                 rain=weather_measure.rain_mm
             )
         )
-    app.db.weather.insert_weathers(to_insert)
+    try:
+        app.db.weather.insert_weathers(to_insert)
+    except Exception as e:
+        pass
 
 
 if __name__ == "__main__":

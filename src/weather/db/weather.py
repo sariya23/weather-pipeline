@@ -24,3 +24,4 @@ class WeatherPostgres(PostgresClient):
         except Exception as e:
             self._conn.rollback()
             logger.error(f"Failed to insert {len(weathers)} weathers with exp '%s'", e)
+            raise e
