@@ -2,9 +2,7 @@ from typing import Protocol
 
 from httpx import Response
 
-
 from src.place.models.domain.place import Place
-from src.models.coordinate import Coordinate
 from src.weather.models.domain.weather import WeatherList
 from src.weather.models.dto.get_weather_request import GetWeatherRequestDTO
 
@@ -15,9 +13,7 @@ class IGetWeather(Protocol):
     def get_weather(self, params: GetWeatherRequestDTO) -> Response:
         pass
 
-    def response_to_domain(
-        self, response: Response, place: Place
-    ) -> WeatherList:
+    def response_to_domain(self, response: Response, place: Place) -> WeatherList:
         pass
 
 

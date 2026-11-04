@@ -61,5 +61,5 @@ CREATE TABLE IF NOT EXISTS weather (
 
 -- +goose Down
 -- +goose StatementBegin
-drop table if exists place, weather, source;
+drop table if exists place, weather, source, region, city;
 -- +goose StatementEnd

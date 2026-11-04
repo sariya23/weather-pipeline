@@ -14,3 +14,15 @@ dependencies = [
     "pytest>=9.1.1",
     "ruff>=0.17.3",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers"
+markers = [
+    "integration: tests against an already running, migrated PostgreSQL (enable with --run-integration)",
+]
+
+[dependency-groups]
+dev = [
+    "pytest-cov>=7.1.0",
+]
