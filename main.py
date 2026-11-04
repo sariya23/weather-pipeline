@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from geopy.geocoders import Nominatim
 
 import src.lib.log  # noqa
+from src.lib.helper import parse_city_region_country
 from src.app.app import App, Core, Database
 from src.config import Config
 from src.place.db.place import PlacePostgres
@@ -36,18 +37,10 @@ def main(
     )
     places = app.db.place.all()
     for place in place_list:
-        try:
-            city, region, country = place.split("/")
-        except ValueError as e:
-            logger.error(
-                "cannot parse (%s) 'city', 'region, 'country' with error '%s', please check format, use city/region/country",
-                e,
-                place,
-            )
+        parsed = parse_city_region_country(place)
+        if not parsed:
             continue
-        except Exception as e:
-            logger.error("unexpected error while parsing place: %s", e)
-            continue
+        city, region, country = parsed
         city_location = geolocator.geocode(f"{city} {region} {country}")
         long, lat = city_location.longitude, city_location.latitude
         req = GetWeatherRequestDTO(
